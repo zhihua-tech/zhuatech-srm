@@ -1,102 +1,58 @@
+# ZhuaTech Enterprise Supplier Relationship Management
+
 [简体中文](README.md) | **English**
 
-# ZhuaTech Supplier Relationship Management
+ZhuaTech SRM is a self-hosted, source-available supplier relationship management system from [ZhuaTech](https://www.zhuatech.cn/), operated by Shanghai Rujing Zhihua Information Technology Co., Ltd. It provides a responsive procurement workspace and a supplier portal backed by the same secured business APIs.
 
-> A source-available enterprise project by [ZhuaTech](https://www.zhuatech.cn/) for supply chain, procurement, order, warehouse, and logistics operations.
+## Capabilities
 
-ZhuaTech Supplier Relationship Management provides a practical, self-hosted foundation for supply chain, procurement, order, warehouse, and logistics operations. It is designed for procurement, planning, warehouse, logistics, supplier, and operations teams, with clear business records, controlled workflows, operational visibility, and auditable actions.
+- Supplier invitation, registration, profiles, contacts, bank details, certificates, onboarding questionnaire and approvals
+- RFQ/RFP, targeted invitations, quote versions, clarifications, comparison and award notification
+- Contract ledger, versions, approvals, attachments and expiry reminders
+- Purchase order API and atomic Excel import, line confirmation, delivery feedback, change versions and exceptions
+- Ratio and quantity quotas, multi-supplier validation, activation history, consumption, balances, alerts and Excel export
+- ASN, delivery appointments, shipping, receiving and discrepancies
+- NCR/CAR, root-cause analysis, corrective actions, evidence, return, verification and closure
+- Reconciliation, invoice registration, supplier performance, rule-based risk alerts and corrective tracking
+- Server-side authorization, organization/supplier isolation, audit logs, optimistic locking, soft deletion, controlled files and health checks
 
-This repository is intended for learning, technical evaluation, and non-commercial collaboration. The included implementation, tests, database resources, and container configuration provide a reproducible starting point for further enterprise adaptation.
+## Runtime
 
-**Search topics:** enterprise supplier relationship management, self-hosted supplier relationship management, Java Spring Boot enterprise software, digital transformation.
-
-## Enterprise Use
-
-- **Primary users:** Procurement, planning, warehouse, logistics, supplier, and operations teams.
-- **Deployment model:** Self-hosted, with container-based local deployment where supported.
-- **Governance baseline:** Role-aware operations, validation, approval boundaries, exception handling, and auditability.
-- **Production boundary:** Review security, identity, backup, observability, capacity, and compliance controls before production use.
-
-## Core Capabilities
-
-- **Supplier** — Manage supplier with ownership, validation, and explicit lifecycle states.
-- **User** — Coordinate user through controlled workflows and approval gates.
-- **Sourcing Event** — Track sourcing event metrics, exceptions, deadlines, and follow-up actions.
-- **Quote** — Preserve quote evidence in searchable, traceable operational history.
-- **Purchase Order** — Expose purchase order in role-aware user and administration workspaces.
-- **Quality Issue** — Connect quality issue to external systems through configurable integration boundaries.
-
-## Architecture and Runtime
-
-**Technology stack:** Java 21 · Spring Boot · Vue 3 · Vite · MySQL 8 · Docker Compose
-
-### Repository Layout
-
-- `backend/` — Java backend, domain services, APIs, validation, and automated tests
-- `frontend/` — responsive user and administration interfaces
-- `deploy/` — deployment and operations resources
-- `docs/` — architecture, operations, screenshots, and supporting documentation
-- `compose.yaml` — local multi-service orchestration
-
-## Quick Start
+Java 21 · Spring Boot 4 · Vue 3 · MySQL 8.4 · Flyway · Docker Compose
 
 ```bash
+cp .env.example .env
+# Configure unique random secrets and the one-time bootstrap administrator.
 docker compose up -d --build
 ```
 
-- Review `compose.yaml` before changing published ports, storage paths, or production credentials.
+There are no built-in demonstration accounts, passwords or production bypasses. Follow [the deployment guide](deploy/README.md) for secure bootstrap, HTTPS, backup and restore.
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [REST API](docs/api.md)
+- [Database](docs/database.md)
+- [User manual](docs/USER_MANUAL.md)
+- [Test results](docs/TEST_RESULTS.md)
+- [Known limitations](docs/KNOWN_LIMITATIONS.md)
 
 ## Verification
-
-Run the checks supported by this repository before changing or deploying it:
 
 ```bash
 cd backend && mvn test
 cd frontend && npm ci && npm run build
 ```
 
-## Interface Preview
-
-### Procurement Admin Dashboard
-
-![Procurement Admin Dashboard](docs/images/procurement-admin-dashboard.png)
-
-### Procurement Admin Suppliers
-
-![Procurement Admin Suppliers](docs/images/procurement-admin-suppliers.png)
-
-### Supplier Portal Dashboard
-
-![Supplier Portal Dashboard](docs/images/supplier-portal-dashboard.png)
-
-### Supplier Portal Rfq
-
-![Supplier Portal Rfq](docs/images/supplier-portal-rfq.png)
-
-## Security and Production Readiness
-
-- Never commit real passwords, API keys, tokens, certificates, customer data, or production connection strings.
-- Replace all local demonstration credentials and secrets before deployment.
-- Apply least privilege, tenant isolation, backup and restore drills, monitoring, rate limiting, and vulnerability management.
-- Please report security issues privately through the contact channels below instead of publishing sensitive details.
-
 ## Usage and Commercial Licensing
 
-Copyright © 2026 Shanghai Rujing Zhihua Information Technology Co., Ltd.
+This project is provided solely for personal learning, technical research and non-commercial communication. Commercial use, internal production deployment, paid delivery, resale, hosted services and commercial derivatives require prior written authorization from Shanghai Rujing Zhihua Information Technology Co., Ltd. See [LICENSE](LICENSE).
 
-This project is a publicly available source edition intended solely for personal learning, technical research, and non-commercial communication. Commercial use, paid delivery, resale, hosted commercial services, and commercial derivative distribution require prior written authorization from the copyright holder.
+For commercial licensing, private deployment, implementation, customization and integration:
 
-Third-party dependencies remain subject to their respective licenses. Review the repository `LICENSE` and `NOTICE` files before use.
-
-## Commercial Licensing and Enterprise Services
-
-For commercial licensing, private deployment, enterprise customization, software outsourcing, implementation services, FDE outsourcing, OPC technical support, or AI transformation consulting, contact ZhuaTech:
-
-- Email: [han@zhuatech.cn](mailto:han@zhuatech.cn)
-- Email: [jack@zhuatech.cn](mailto:jack@zhuatech.cn)
+- [han@zhuatech.cn](mailto:han@zhuatech.cn)
+- [jack@zhuatech.cn](mailto:jack@zhuatech.cn)
 - [WhatsApp: +86 17521234993](https://wa.me/8617521234993)
-- Website: [https://www.zhuatech.cn/](https://www.zhuatech.cn/)
+- [https://www.zhuatech.cn/](https://www.zhuatech.cn/)
 
-## About ZhuaTech
-
-[ZhuaTech](https://www.zhuatech.cn/) is operated by Shanghai Rujing Zhihua Information Technology Co., Ltd. We support small and medium-sized enterprises with digital transformation, AI adoption, enterprise software implementation, custom development, software project outsourcing, FDE services, OPC integration, and long-term technical support.
+Copyright © 2026 Shanghai Rujing Zhihua Information Technology Co., Ltd. All rights reserved.

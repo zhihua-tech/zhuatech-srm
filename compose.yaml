@@ -5,8 +5,8 @@ services:
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-zhuatech_srm}
       MYSQL_USER: ${MYSQL_USER:-zhuatech}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change-me-for-local-only}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-root-password}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - srm_mysql_data:/var/lib/mysql
@@ -21,9 +21,23 @@ services:
     environment:
       DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-zhuatech_srm}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
       DB_USERNAME: ${MYSQL_USER:-zhuatech}
-      DB_PASSWORD: ${MYSQL_PASSWORD:-change-me-for-local-only}
-      JWT_SECRET: ${JWT_SECRET:-replace-with-at-least-32-random-characters}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8090,http://127.0.0.1:8090}
+      BOOTSTRAP_ADMIN_ENABLED: ${BOOTSTRAP_ADMIN_ENABLED:-false}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      BOOTSTRAP_ADMIN_FULL_NAME: ${BOOTSTRAP_ADMIN_FULL_NAME:-系统管理员}
+      BOOTSTRAP_ORGANIZATION_CODE: ${BOOTSTRAP_ORGANIZATION_CODE:-DEFAULT}
+      FILE_STORAGE_ROOT: /app/data/files
+      FILE_STORAGE_MAX_SIZE: ${FILE_STORAGE_MAX_SIZE:-20971520}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-20MB}
+      MAX_REQUEST_SIZE: ${MAX_REQUEST_SIZE:-25MB}
+      MAX_LOGIN_ATTEMPTS: ${MAX_LOGIN_ATTEMPTS:-5}
+      LOGIN_LOCK_MINUTES: ${LOGIN_LOCK_MINUTES:-15}
+      BUSINESS_RULE_CRON: "${BUSINESS_RULE_CRON:-0 15 1 * * *}"
+    volumes:
+      - srm_file_data:/app/data/files
     depends_on:
       mysql:
         condition: service_healthy
@@ -43,3 +57,4 @@ services:
         condition: service_healthy
 volumes:
   srm_mysql_data:
+  srm_file_data:

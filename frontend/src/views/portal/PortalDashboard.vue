@@ -1,2 +1,100 @@
-<script setup>import AppShell from '../../components/AppShell.vue';import MetricGrid from '../../components/MetricGrid.vue';import StatusPill from '../../components/StatusPill.vue';import {portalMetrics,orders,quality} from '../../api/mock'</script>
-<template><AppShell mode="portal"><div class="page-head"><div><span class="breadcrumb">供应商门户 / 工作台</span><h1>上午好，顾洁</h1><p>以下是今天需要优先处理的协同事项。</p></div><button class="primary">+ 创建送货预约</button></div><div class="notice"><b>待办提醒</b><span>RFQ-202607-021 将于明天下午 16:00 截止，请及时提交最终报价。</span><router-link to="/portal/rfqs">立即处理 →</router-link></div><MetricGrid :items="portalMetrics"/><div class="dashboard-grid"><section class="panel wide"><div class="panel-head"><div><h2>订单执行</h2><p>近期采购订单及交付进度</p></div><router-link to="/portal/orders">查看全部</router-link></div><table><thead><tr><th>采购订单</th><th>物料摘要</th><th>订单金额</th><th>交付日期</th><th>执行进度</th><th>状态</th></tr></thead><tbody><tr v-for="o in orders.slice(0,3)" :key="o.no"><td><b>{{o.no}}</b></td><td>{{o.item}}</td><td>{{o.amount}}</td><td>{{o.date}}</td><td><div class="progress"><span :style="{width:o.progress+'%'}"></span></div><small>{{o.progress}}%</small></td><td><StatusPill :text="o.status"/></td></tr></tbody></table></section><section class="panel"><div class="panel-head"><div><h2>质量协同</h2><p>待处理整改项</p></div><router-link to="/portal/quality">全部</router-link></div><div class="issue" v-for="q in quality.slice(0,2)" :key="q.no"><div><StatusPill :text="q.severity"/><small>{{q.no}}</small></div><b>{{q.title}}</b><span>截止 {{q.due}} · {{q.status}}</span></div></section><section class="panel"><div class="panel-head"><div><h2>企业资料</h2><p>准入材料完整度</p></div></div><div class="profile-score"><div><b>100%</b><span>资料已通过审核</span></div><div class="ring">A</div></div><div class="profile-row"><span>营业执照</span><b>有效</b></div><div class="profile-row"><span>质量体系证书</span><b>2027-03-18 到期</b></div></section></div></AppShell></template>
+<script setup>
+import { onMounted, ref } from "vue";
+import AppShell from "../../components/AppShell.vue";
+import MetricGrid from "../../components/MetricGrid.vue";
+import StatusPill from "../../components/StatusPill.vue";
+import { useAuthStore } from "../../stores/auth";
+import http from "../../api/http";
+const auth = useAuthStore(),
+  loading = ref(true),
+  error = ref(""),
+  dashboard = ref({ metrics: [], workItems: [] });
+async function load() {
+  loading.value = true;
+  error.value = "";
+  try {
+    dashboard.value = (await http.get("/portal/dashboard")).data.data;
+  } catch (e) {
+    error.value = e.response?.data?.message || "工作台加载失败";
+  } finally {
+    loading.value = false;
+  }
+}
+onMounted(load);
+</script>
+<template>
+  <AppShell mode="portal"
+    ><div class="page-head">
+      <div>
+        <span class="breadcrumb">供应商门户 / 工作台</span>
+        <h1>{{ auth.user?.fullName }}，您好</h1>
+        <p>请优先处理临近截止时间的询价、订单、交付及质量事项。</p>
+      </div>
+      <router-link class="primary" to="/portal/delivery"
+        >创建送货通知</router-link
+      >
+    </div>
+    <div v-if="error" class="state-box error-state">
+      <b>{{ error }}</b
+      ><button class="secondary" @click="load">重新加载</button>
+    </div>
+    <template v-else
+      ><div v-if="loading" class="state-box">
+        <span class="loader"></span>
+        <p>正在加载供应商工作台…</p>
+      </div>
+      <template v-else
+        ><MetricGrid :items="dashboard.metrics" />
+        <div class="dashboard-grid">
+          <section class="panel wide">
+            <div class="panel-head">
+              <div>
+                <h2>业务待办</h2>
+                <p>询价、订单、交付、整改和对账事项</p>
+              </div>
+              <router-link to="/portal/inbox">查看全部</router-link>
+            </div>
+            <div v-if="!dashboard.workItems.length" class="state-box compact">
+              <b>暂无待办</b>
+              <p>当前没有需要处理的业务事项。</p>
+            </div>
+            <div v-else class="task-list">
+              <router-link
+                v-for="item in dashboard.workItems"
+                :key="item.id"
+                :to="item.link || '/portal/inbox'"
+                class="task-row"
+                ><div>
+                  <StatusPill :text="item.kind" /><b>{{ item.title }}</b>
+                  <p>{{ item.content }}</p>
+                </div>
+                <span>{{
+                  item.dueAt?.replace("T", " ").slice(0, 16) || "无截止时间"
+                }}</span></router-link
+              >
+            </div>
+          </section>
+          <section class="panel quick-panel">
+            <div class="panel-head">
+              <div>
+                <h2>协同入口</h2>
+                <p>进入常用业务模块</p>
+              </div>
+            </div>
+            <div class="quick-links">
+              <router-link to="/portal/rfqs"
+                ><b>询报价</b><span>报价与澄清</span></router-link
+              ><router-link to="/portal/orders"
+                ><b>采购订单</b><span>确认数量与交期</span></router-link
+              ><router-link to="/portal/quality"
+                ><b>质量整改</b><span>原因、措施与证据</span></router-link
+              ><router-link to="/portal/settlement"
+                ><b>对账发票</b><span>确认、异议与开票</span></router-link
+              >
+            </div>
+          </section>
+        </div></template
+      ></template
+    ></AppShell
+  >
+</template>

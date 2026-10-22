@@ -2,10 +2,12 @@
 package cn.zhuatech.srm;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 /**
  * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
  */
 @SpringBootApplication
+@EnableScheduling
 public class ZhuaTechSrmApplication {
     /**
      * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。

@@ -1,41 +1,87 @@
-/* Copyright 2026 Shanghai Rujing Zhihua Information Technology Co., Ltd. · https://www.zhuatech.cn/ */
+/* Copyright 2026 上海如静知华信息科技有限公司 · https://www.zhuatech.cn/ */
 package cn.zhuatech.srm.config;
-import cn.zhuatech.srm.repository.UserRepository; import cn.zhuatech.srm.security.JwtAuthenticationFilter; import org.springframework.beans.factory.annotation.Value; import org.springframework.context.annotation.*; import org.springframework.http.HttpMethod; import org.springframework.security.authentication.AuthenticationManager; import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration; import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity; import org.springframework.security.config.annotation.web.builders.HttpSecurity; import org.springframework.security.config.http.SessionCreationPolicy; import org.springframework.security.core.userdetails.*; import org.springframework.security.crypto.bcrypt.*; import org.springframework.security.crypto.password.PasswordEncoder; import org.springframework.security.web.SecurityFilterChain; import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; import org.springframework.web.cors.*; import java.util.List;
-/**
- * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
- */
-@Configuration @EnableMethodSecurity public class SecurityConfig {
-    /**
-     * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-     */
-    @Bean UserDetailsService userDetailsService(UserRepository repo){return username->repo.findByUsername(username).map(u->User.withUsername(u.getUsername()).password(u.getPassword()).roles(u.getRole().name()).disabled(!u.isEnabled()).build()).orElseThrow(()->new UsernameNotFoundException("用户不存在"));}
-    /**
-     * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-     */
-    @Bean PasswordEncoder passwordEncoder(){return new BCryptPasswordEncoder();}
-    /**
-     * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-     */
-    @Bean AuthenticationManager authenticationManager(AuthenticationConfiguration cfg)throws Exception{return cfg.getAuthenticationManager();}
-    /**
-     * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-     */
-    @Bean CorsConfigurationSource corsConfigurationSource(@Value("${app.cors.allowed-origins}") List<String> origins){CorsConfiguration c=new CorsConfiguration();c.setAllowedOrigins(origins);c.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));c.setAllowedHeaders(List.of("*"));c.setAllowCredentials(true);UrlBasedCorsConfigurationSource s=new UrlBasedCorsConfigurationSource();s.registerCorsConfiguration("/**",c);return s;}
-    /**
-     * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-     */
-    @Bean SecurityFilterChain securityFilterChain(HttpSecurity http,JwtAuthenticationFilter filter)throws Exception{return http.csrf(c->c.disable()).cors(c->{ }).sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(a->a.requestMatchers("/api/auth/login","/error").permitAll().requestMatchers(HttpMethod.OPTIONS,"/**").permitAll().anyRequest().authenticated()).addFilterBefore(filter,UsernamePasswordAuthenticationFilter.class).exceptionHandling(errors -> errors
-                .authenticationEntryPoint((request, response, exception) -> writeError(response, 401, "请先登录或重新登录"))
-                .accessDeniedHandler((request, response, exception) -> writeError(response, 403, "没有操作权限"))).build();}
 
-    /**
-     * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-     */
-    private static void writeError(jakarta.servlet.http.HttpServletResponse response, int status, String message) throws java.io.IOException {
+import cn.zhuatech.srm.repository.UserRepository;
+import cn.zhuatech.srm.security.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig {
+    @Bean
+    UserDetailsService userDetailsService(UserRepository repository) {
+        return username -> repository.findByUsername(username)
+            .map(user -> User.withUsername(user.getUsername())
+                .password(user.getPassword())
+                .roles(user.getRole().name())
+                .disabled(!user.isEnabled())
+                .accountLocked(user.isLocked())
+                .build())
+            .orElseThrow(() -> new UsernameNotFoundException("用户不存在"));
+    }
+
+    @Bean PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(12); }
+    @Bean AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(@Value("${app.cors.allowed-origins}") List<String> origins) {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(origins);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Idempotency-Key", "X-Request-Id"));
+        config.setExposedHeaders(List.of("Content-Disposition", "X-Request-Id"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter filter) throws Exception {
+        return http
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> {})
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/login", "/api/public/suppliers/register", "/actuator/health", "/error").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/actuator/**").hasRole("ADMIN")
+                .anyRequest().authenticated())
+            .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(errors -> errors
+                .authenticationEntryPoint((request, response, exception) -> writeError(response, 401, "请先登录或重新登录"))
+                .accessDeniedHandler((request, response, exception) -> writeError(response, 403, "没有操作权限")))
+            .build();
+    }
+
+    private static void writeError(jakarta.servlet.http.HttpServletResponse response, int status, String message)
+        throws java.io.IOException {
         response.setStatus(status);
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
-        response.getWriter().write("{\"success\":false,\"message\":\"" + message + "\"}");
+        response.getWriter().write("{\"success\":false,\"message\":\"" + message + "\",\"data\":null}");
     }
-
 }

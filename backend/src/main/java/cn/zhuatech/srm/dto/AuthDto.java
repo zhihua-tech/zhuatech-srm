@@ -1,29 +1,24 @@
-/* Copyright 2026 Shanghai Rujing Zhihua Information Technology Co., Ltd. · https://www.zhuatech.cn/ */
+/* Copyright 2026 上海如静知华信息科技有限公司 · https://www.zhuatech.cn/ */
 package cn.zhuatech.srm.dto;
-import cn.zhuatech.srm.model.UserAccount; import jakarta.validation.constraints.NotBlank;
-/**
- * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
- */
+
+import cn.zhuatech.srm.model.UserAccount;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
 public final class AuthDto {
-    /**
-     * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-     */
-    private AuthDto(){}
-    /**
-     * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-     */
-    public record LoginRequest(@NotBlank(message="请输入用户名") String username,@NotBlank(message="请输入密码") String password){}
-    /**
-     * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-     */
-    public record UserView(Long id,String username,String fullName,String role,String supplierName){
-        /**
-         * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-         */
-        public static UserView from(UserAccount u){return new UserView(u.getId(),u.getUsername(),u.getFullName(),u.getRole().name(),u.getSupplier()==null?null:u.getSupplier().getSupplierName());}
+    private AuthDto() {}
+    public record LoginRequest(@NotBlank(message = "请输入用户名") String username,
+                               @NotBlank(message = "请输入密码") String password) {}
+    public record ChangePasswordRequest(@NotBlank String currentPassword,
+                                        @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).{12,72}$",
+                                            message = "新密码至少 12 位并同时包含字母和数字") String newPassword) {}
+    public record UserView(Long id, String username, String fullName, String role, String organizationCode,
+                           Long supplierId, String supplierName) {
+        public static UserView from(UserAccount user) {
+            return new UserView(user.getId(), user.getUsername(), user.getFullName(), user.getRole().name(),
+                user.getOrganizationCode(), user.getSupplier() == null ? null : user.getSupplier().getId(),
+                user.getSupplier() == null ? null : user.getSupplier().getSupplierName());
+        }
     }
-    /**
-     * 商业授权或定制开发请微信添加微信号zhuatech或zhuatech2进行咨询。
-     */
-    public record LoginResponse(String token,UserView user){}
+    public record LoginResponse(String token, UserView user) {}
 }

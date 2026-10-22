@@ -1,2 +1,101 @@
-<script setup>import AppShell from '../../components/AppShell.vue';import MetricGrid from '../../components/MetricGrid.vue';import StatusPill from '../../components/StatusPill.vue';import {adminMetrics,rfqs,quality} from '../../api/mock';const bars=[68,84,56,91,76,88,64,96,82,74,89,93]</script>
-<template><AppShell mode="admin"><div class="page-head"><div><span class="breadcrumb">采购协同 / 驾驶舱</span><h1>采购驾驶舱</h1><p>供应基础、寻源进度与交付风险的今日概览。</p></div><div class="head-actions"><button class="secondary">导出周报</button><button class="primary">+ 发起寻源</button></div></div><MetricGrid :items="adminMetrics"/><div class="dashboard-grid admin-grid"><section class="panel chart-panel"><div class="panel-head"><div><h2>月度采购执行</h2><p>近 12 个月下单金额与准时交付趋势</p></div><select><option>全部采购组织</option></select></div><div class="chart-wrap"><div class="chart-y"><span>300 万</span><span>200 万</span><span>100 万</span><span>0</span></div><div class="bars"><div v-for="(b,i) in bars" :key="i" class="bar-item"><div class="bar" :style="{height:b+'%'}"></div><span>{{i+8>12?i-4:i+8}}月</span></div></div><div class="chart-total"><span>本年采购额</span><b>¥ 18.64M</b><small>同比 +8.6%</small></div></div></section><section class="panel risk-panel"><div class="panel-head"><div><h2>风险观察</h2><p>需要采购团队跟进</p></div><router-link to="/admin/risk">风险中心</router-link></div><div class="risk-row"><span class="risk-level high">高</span><div><b>常州鑫恒电子科技</b><small>近 3 单平均延期 4.2 天</small></div><em>陈屿</em></div><div class="risk-row"><span class="risk-level medium">中</span><div><b>苏州景澄精密制造</b><small>准入资料还有 3 项待补充</small></div><em>韩思远</em></div><div class="risk-row"><span class="risk-level medium">中</span><div><b>原材料价格波动</b><small>铜材指数 7 日上涨 5.6%</small></div><em>陆琪</em></div></section><section class="panel wide"><div class="panel-head"><div><h2>寻源项目</h2><p>报价进度与待决策项目</p></div><router-link to="/admin/sourcing">查看全部</router-link></div><table><thead><tr><th>项目编号</th><th>寻源项目</th><th>品类</th><th>负责人</th><th>截止时间</th><th>响应进度</th><th>状态</th></tr></thead><tbody><tr v-for="r in rfqs.slice(0,3)" :key="r.no"><td><b>{{r.no}}</b></td><td>{{r.title}}</td><td>{{r.category}}</td><td>{{r.owner}}</td><td>{{r.deadline}}</td><td>{{r.progress}}</td><td><StatusPill :text="r.status"/></td></tr></tbody></table></section><section class="panel"><div class="panel-head"><div><h2>质量待办</h2><p>逾期与高优先级问题</p></div></div><div class="issue compact" v-for="q in quality" :key="q.no"><div><StatusPill :text="q.severity"/><small>{{q.due}}</small></div><b>{{q.title}}</b><span>{{q.no}} · {{q.owner}}</span></div></section></div></AppShell></template>
+<script setup>
+import { onMounted, ref } from "vue";
+import AppShell from "../../components/AppShell.vue";
+import MetricGrid from "../../components/MetricGrid.vue";
+import StatusPill from "../../components/StatusPill.vue";
+import http from "../../api/http";
+const loading = ref(true),
+  error = ref(""),
+  dashboard = ref({ metrics: [], workItems: [] });
+async function load() {
+  loading.value = true;
+  error.value = "";
+  try {
+    dashboard.value = (await http.get("/admin/dashboard")).data.data;
+  } catch (e) {
+    error.value = e.response?.data?.message || "工作台加载失败";
+  } finally {
+    loading.value = false;
+  }
+}
+onMounted(load);
+</script>
+<template>
+  <AppShell mode="admin"
+    ><div class="page-head">
+      <div>
+        <span class="breadcrumb">采购管理 / 工作台</span>
+        <h1>采购工作台</h1>
+        <p>供应商、寻源、订单、质量及到期事项的实时概览。</p>
+      </div>
+      <div class="head-actions">
+        <router-link class="secondary" to="/admin/audit">查看审计</router-link
+        ><router-link class="primary" to="/admin/sourcing"
+          >发起寻源</router-link
+        >
+      </div>
+    </div>
+    <div v-if="error" class="state-box error-state">
+      <b>{{ error }}</b
+      ><button class="secondary" @click="load">重新加载</button>
+    </div>
+    <template v-else
+      ><div v-if="loading" class="state-box">
+        <span class="loader"></span>
+        <p>正在汇总工作台数据…</p>
+      </div>
+      <template v-else
+        ><MetricGrid :items="dashboard.metrics" />
+        <div class="dashboard-grid">
+          <section class="panel wide">
+            <div class="panel-head">
+              <div>
+                <h2>我的待办</h2>
+                <p>需要当前账号处理的业务事项</p>
+              </div>
+              <router-link to="/admin/inbox">查看全部</router-link>
+            </div>
+            <div v-if="!dashboard.workItems.length" class="state-box compact">
+              <b>暂无待办</b>
+              <p>当前没有需要处理的任务。</p>
+            </div>
+            <div v-else class="task-list">
+              <router-link
+                v-for="item in dashboard.workItems"
+                :key="item.id"
+                :to="item.link || '/admin/inbox'"
+                class="task-row"
+                ><div>
+                  <StatusPill :text="item.kind" /><b>{{ item.title }}</b>
+                  <p>{{ item.content }}</p>
+                </div>
+                <span>{{
+                  item.dueAt?.replace("T", " ").slice(0, 16) || "无截止时间"
+                }}</span></router-link
+              >
+            </div>
+          </section>
+          <section class="panel quick-panel">
+            <div class="panel-head">
+              <div>
+                <h2>常用入口</h2>
+                <p>进入核心业务模块</p>
+              </div>
+            </div>
+            <div class="quick-links">
+              <router-link to="/admin/suppliers"
+                ><b>供应商管理</b><span>准入、资质与状态</span></router-link
+              ><router-link to="/admin/quotas"
+                ><b>配额管理</b><span>方案、执行与预警</span></router-link
+              ><router-link to="/admin/orders"
+                ><b>采购订单</b><span>导入、版本与异常</span></router-link
+              ><router-link to="/admin/quality"
+                ><b>质量协同</b><span>NCR 与整改闭环</span></router-link
+              >
+            </div>
+          </section>
+        </div></template
+      ></template
+    ></AppShell
+  >
+</template>
