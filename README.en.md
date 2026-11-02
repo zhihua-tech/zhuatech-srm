@@ -2,7 +2,7 @@
 
 [简体中文](README.md) | **English**
 
-ZhuaTech SRM is a self-hosted, source-available supplier relationship management system from [ZhuaTech](https://www.zhuatech.cn/), operated by Shanghai Rujing Zhihua Information Technology Co., Ltd. It provides a responsive procurement workspace and a supplier portal backed by the same secured business APIs.
+ZhuaTech SRM is a self-hosted, source-available supplier relationship management system from [ZhuaTech](https://www.zhuatech.cn/en.html), operated by Shanghai Rujing Zhihua Information Technology Co., Ltd. It provides a responsive procurement workspace and a supplier portal backed by the same secured business APIs.
 
 ## Capabilities
 
@@ -53,6 +53,6 @@ For commercial licensing, private deployment, implementation, customization and 
 - [han@zhuatech.cn](mailto:han@zhuatech.cn)
 - [jack@zhuatech.cn](mailto:jack@zhuatech.cn)
 - [WhatsApp: +86 17521234993](https://wa.me/8617521234993)
-- [https://www.zhuatech.cn/](https://www.zhuatech.cn/)
+- [https://www.zhuatech.cn/en.html](https://www.zhuatech.cn/en.html)
 
 Copyright © 2026 Shanghai Rujing Zhihua Information Technology Co., Ltd. All rights reserved.
